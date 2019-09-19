@@ -2,7 +2,7 @@
  * The controller defined below is the attribute controller, highlighted below are the functions of each static method
  * in the controller
  *  Some methods needs to be implemented from scratch while others may contain one or two bugs
- * 
+ *
  * - getAllAttributes - This method should return an array of all attributes
  * - getSingleAttribute - This method should return a single attribute using the attribute_id in the request parameter
  * - getAttributeValues - This method should return an array of all attribute values of a single attribute using the attribute id
@@ -10,6 +10,11 @@
  * NB: Check the BACKEND CHALLENGE TEMPLATE DOCUMENTATION in the readme of this repository to see our recommended
  *  endpoints, request body/param, and response object for each of these method
  */
+import models from '../database/models';
+import { ModelHelpers, Response } from '../helpers';
+
+const { attribute } = models;
+
 class AttributeController {
   /**
    * This method get all attributes
@@ -17,9 +22,21 @@ class AttributeController {
    * @param {*} res
    * @param {*} next
    */
+  // static async getAllAttributes(req, res, next) {
+  //   // write code to get all attributes from the database here
+  //   return res.status(200).json({ message: 'this works' });
+  // }
+
   static async getAllAttributes(req, res, next) {
-    // write code to get all attributes from the database here
-    return res.status(200).json({ message: 'this works' });
+    const helpers = new ModelHelpers(attribute);
+    try {
+      const data = await helpers.findMany();
+      return data.length > 0
+        ? Response.response(res, 200, data)
+        : Response.errorResponse(204, 'ATTR_01', 'no attributes exist');
+    } catch (error) {
+      return Response.errorResponse(500, 'ATTR_00', 'Internal server error');
+    }
   }
 
   /**
