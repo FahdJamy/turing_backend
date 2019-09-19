@@ -10,18 +10,17 @@
 
 Summarise the main tasks handled in the pull request
 
-**Provide test plan?(required)**
+**Provide test plan? (required)**
 
 - [ ] Unit
 - [ ] Integration
 - [ ] End-to-end
 
-Bullet point instructions on how to setup the code and test it manually.
+Bullet point instructions on how to set up the code and test it manually.
 
 **Screenshots (Where appropriate)**
 
 You can have screenshots where applicable
-
 
 **Story-ID**
 

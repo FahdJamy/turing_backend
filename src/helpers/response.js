@@ -1,12 +1,12 @@
 class Response {
-  static errorResponse(status, code, message, field = null) {
-    const errorResponse = { status, code, message, field };
-    return { error: errorResponse };
+  static errorResponse(res, status, code, message, field = null) {
+    const payload = { code, message };
+    if (field) payload.count = field;
+    return res.status(status).json(payload);
   }
 
-  static response(res, status, rows = null, count = null) {
-    const payload = { rows };
-    if (count) payload.count = count;
+  static response(res, status, data = null) {
+    const payload = data;
     return res.status(status).json(payload);
   }
 }
