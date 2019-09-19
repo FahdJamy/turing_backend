@@ -14,7 +14,7 @@ import models from '../database/models';
 import { ModelHelpers, Response } from '../helpers';
 
 const { attribute } = models;
-
+const helpers = new ModelHelpers(attribute);
 class AttributeController {
   /**
    * This method get all attributes
@@ -28,14 +28,13 @@ class AttributeController {
   // }
 
   static async getAllAttributes(req, res, next) {
-    const helpers = new ModelHelpers(attribute);
     try {
       const data = await helpers.findMany();
       return data.length > 0
         ? Response.response(res, 200, data)
-        : Response.errorResponse(204, 'ATTR_01', 'no attributes exist');
+        : Response.errorResponse(res, 204, 'ATTR_01', 'no attributes exist');
     } catch (error) {
-      return Response.errorResponse(500, 'ATTR_00', 'Internal server error');
+      return Response.errorResponse(res, 500, 'ATTR_00', 'Internal server error');
     }
   }
 
@@ -46,8 +45,15 @@ class AttributeController {
    * @param {*} next
    */
   static async getSingleAttribute(req, res, next) {
-    // Write code to get a single attribute using the attribute id provided in the request param
-    return res.status(200).json({ message: 'this works' });
+    const { attributeId } = req.params;
+    try {
+      const data = await helpers.findOne({ attribute_id: attributeId });
+      return data.length > 0
+        ? Response.response(res, 200, data)
+        : Response.errorResponse(res, 500, 'ATTR_05', 'no attributes with that id exists');
+    } catch (error) {
+      return Response.errorResponse(res, 500, 'ATTR_00', 'Internal server error');
+    }
   }
 
   /**
