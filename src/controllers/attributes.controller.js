@@ -12,9 +12,11 @@
  */
 import models from '../database/models';
 import { ModelHelpers, Response } from '../helpers';
+import { flattenObject } from '../utils';
 
-const { attribute } = models;
-const helpers = new ModelHelpers(attribute);
+const { attribute, attributeValue, productAttribute } = models;
+const attributeModelHelper = new ModelHelpers(attribute);
+const attributeValueModelHelper = new ModelHelpers(attributeValue);
 class AttributeController {
   /**
    * This method get all attributes
@@ -29,12 +31,10 @@ class AttributeController {
 
   static async getAllAttributes(req, res, next) {
     try {
-      const data = await helpers.findMany();
-      return data.length > 0
-        ? Response.response(res, 200, data)
-        : Response.errorResponse(res, 204, 'ATTR_01', 'no attributes exist');
+      const data = await attributeModelHelper.findMany();
+      return Response.response(res, 200, data);
     } catch (error) {
-      return Response.errorResponse(res, 500, 'ATTR_00', 'Internal server error');
+      return Response.errorResponse(res, 204, 'ATTR_01', 'no attributes exist');
     }
   }
 
@@ -47,12 +47,10 @@ class AttributeController {
   static async getSingleAttribute(req, res, next) {
     const { attributeId } = req.params;
     try {
-      const data = await helpers.findOne({ attribute_id: attributeId });
-      return data.length > 0
-        ? Response.response(res, 200, data)
-        : Response.errorResponse(res, 500, 'ATTR_05', 'no attributes with that id exists');
+      const data = await attributeModelHelper.findOne({ attribute_id: attributeId });
+      return Response.response(res, 200, data);
     } catch (error) {
-      return Response.errorResponse(res, 500, 'ATTR_00', 'Internal server error');
+      return Response.errorResponse(res, 500, 'ATTR_05', 'no attributes with that id exists');
     }
   }
 
@@ -63,9 +61,13 @@ class AttributeController {
    * @param {*} next
    */
   static async getAttributeValues(req, res, next) {
-    // Write code to get all attribute values for an attribute using the attribute id provided in the request param
-    // This function takes the param: attribute_id
-    return res.status(200).json({ message: 'this works' });
+    const { attributeId } = req.params;
+    try {
+      const data = await attributeValueModelHelper.findMany({ attribute_id: attributeId });
+      return Response.response(res, 200, data);
+    } catch (error) {
+      return Response.errorResponse(res, 500, 'ATTR_05', 'no attributes with that id exists');
+    }
   }
 
   /**
@@ -75,8 +77,35 @@ class AttributeController {
    * @param {*} next
    */
   static async getProductAttributes(req, res, next) {
-    // Write code to get all attribute values for a product using the product id provided in the request param
-    return res.status(200).json({ message: 'this works' });
+    const { productId } = req.params;
+    try {
+      let data = await productAttribute.findAll({
+        where: { product_id: productId },
+        include: [
+          {
+            model: attributeValue,
+            attributes: [['value', 'attribute_value'], 'attribute_value_id'],
+            include: [
+              {
+                model: attribute,
+                as: 'attribute_type',
+                attributes: [['name', 'attribute_name']],
+              },
+            ],
+          },
+        ],
+        attributes: [],
+      });
+      data = data.map(r => flattenObject(r.toJSON()));
+      return Response.response(res, 200, data);
+    } catch (error) {
+      return Response.errorResponse(
+        res,
+        500,
+        'ATTR_05',
+        'no attribute values for that product Id exist'
+      );
+    }
   }
 }
 
